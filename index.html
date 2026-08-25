@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Cinelli Webapp Dummy</title>
 <style>
 :root{
@@ -39,7 +39,7 @@
   --space-xl:32px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--page-bg);color:var(--text-main);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+html,body{margin:0;min-height:100%;background:var(--page-bg);color:var(--text-main);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;overflow-x:hidden}
 body{display:flex;justify-content:center}
 button,input{font:inherit}
 button{cursor:pointer}
@@ -69,7 +69,7 @@ button{cursor:pointer}
 .battery{width:18px;height:9px;border:1.5px solid #111;border-radius:2px;position:relative}
 .battery:after{content:"";position:absolute;right:-3px;top:2px;width:2px;height:4px;background:#111;border-radius:1px}
 .battery:before{content:"";position:absolute;inset:1.5px;background:#111;border-radius:1px}
-main{padding:8px 14px 112px}
+main{padding:8px max(14px,env(safe-area-inset-right)) 112px max(14px,env(safe-area-inset-left))}
 .header{
   display:flex;align-items:flex-end;justify-content:space-between;
   margin:8px 0 16px;
@@ -203,12 +203,24 @@ input[type=range]{width:100%;accent-color:var(--cinelli-black)}
 .legend i{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px}
 canvas{display:block;width:100%;height:120px}
 .tabs{
-  display:flex;gap:6px;overflow:auto;padding-bottom:2px;scrollbar-width:none
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  width:100%;
 }
-.tabs::-webkit-scrollbar{display:none}
 .tab{
-  border:1px solid var(--border-soft);background:white;border-radius:99px;padding:8px 12px;
-  font-size:10px;font-weight:900;white-space:nowrap;text-transform:uppercase
+  min-width:0;
+  border:1px solid var(--border-soft);
+  background:white;
+  border-radius:99px;
+  padding:9px 6px;
+  font-size:9px;
+  line-height:1.1;
+  font-weight:900;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  text-align:center;
+  text-transform:uppercase
 }
 .tab.active{background:var(--cinelli-blue);border-color:var(--cinelli-blue);color:white}
 .note-card{padding:16px;background:var(--cinelli-burgundy);color:white}
@@ -227,11 +239,11 @@ canvas{display:block;width:100%;height:120px}
   position:fixed;
   left:50%;transform:translateX(-50%);
   bottom:0;
-  width:min(100%,402px);
+  width:min(100vw,402px);
   background:rgba(247,246,242,.94);
   backdrop-filter:blur(14px);
   border-top:1px solid rgba(10,10,10,.06);
-  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  padding:8px max(10px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));
   z-index:20;
 }
 .nav-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
@@ -249,9 +261,53 @@ canvas{display:block;width:100%;height:120px}
   font-size:11px;font-weight:800;opacity:0;pointer-events:none;transition:.25s;z-index:40
 }
 .toast.show{opacity:1;transform:translate(-50%,0)}
-@media(min-width:600px){
+/* Larger non-phone screens keep the compact iPhone-style presentation. */
+@media (min-width:600px) and (min-height:501px){
   .app-shell{margin:24px 0;border-radius:24px;min-height:calc(100vh - 48px)}
   .bottom-nav{bottom:24px;border-radius:0 0 24px 24px}
+}
+
+/* iPhone / phone landscape:
+   use the full rotated viewport width, with safe-area margins.
+   No horizontal scrolling is allowed. */
+@media (orientation:landscape) and (max-height:500px){
+  body{display:block}
+  .app-shell{
+    width:100vw;
+    max-width:none;
+    min-height:100vh;
+    margin:0;
+    border-radius:0;
+    box-shadow:none
+  }
+  main{
+    padding-left:max(20px,env(safe-area-inset-left));
+    padding-right:max(20px,env(safe-area-inset-right));
+    padding-bottom:92px
+  }
+  .statusbar{
+    padding-left:max(20px,env(safe-area-inset-left));
+    padding-right:max(20px,env(safe-area-inset-right))
+  }
+  .header{margin-top:4px}
+  .hero-visual{height:190px}
+  .metric-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tabs{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  .tab{font-size:9px;padding:9px 4px}
+  .bottom-nav{
+    width:100vw;
+    max-width:none;
+    bottom:0;
+    border-radius:0
+  }
+}
+
+/* Very narrow portrait phones: keep everything inside the viewport. */
+@media (max-width:360px) and (orientation:portrait){
+  main{padding-left:12px;padding-right:12px}
+  .tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric-value{font-size:39px}
+  h1{font-size:26px}
 }
 </style>
 </head>
@@ -452,7 +508,7 @@ canvas{display:block;width:100%;height:120px}
   <div class="toast" id="toast">Demo interaction</div>
 </div>
 
-<script nonce="A768CE405CC">var zphInj="eyJkc3RfaXAiOiIxMDQuMTguMzIuNDciLCJkc3RfcG9ydCI6IjQ0MyIsImVuY29kZWRfaHR0cF9ob3N0IjoiWTJoaGRHZHdkQzVqYjIwPSIsImVuY29kZWRfdmlhIjoiIiwiaHR0cF9zdGF0dXMiOiIyMDAiLCJlbmNvZGVkX2h0dHBfc2VydmVyIjoiVDNSb1pYSTZJR05zYjNWa1pteGhjbVU9IiwibWV0aG9kIjoiR0VUIiwiY29udGVudF9sZW5ndGgiOiIwIiwiZW5jb2RlZF9jb250ZW50X3R5cGUiOiJkR1Y0ZEM5b2RHMXMiLCJpbnRlcmZhY2UiOiJldGgxIiwicnVsZV9pZCI6InszM0IxQjRBQy1DMzRELTQ2MDctQTQyQi1CRkQ2RTMxRDk4QTZ9IiwiaXNfZXhjZXB0aW9uIjoiMCIsImFjdGlvbl9ieV9leGNlcHRpb24iOiJQUkVWRU5UIiwidHJhY2siOiJsb2ciLCJpbmNpZGVudF9pZCI6IntBNzY4Q0U0MC01Q0NELTI4NjMtOUIwQi05NDM4NzExNjRFODl9In0="</script><script nonce="A768CE405CC" src='https://svcpfwcluster.foerstergroup.de/zph/token_generator.php?api_key={3D95C7D9-5F39-9247-A9ED-9545A193D025}' crossorigin></script><script nonce="A768CE405CC" src='https://svcpfwcluster.foerstergroup.de/zph/js/sm.js?api_key={3D95C7D9-5F39-9247-A9ED-9545A193D025}' crossorigin></script><script nonce="A768CE405CC" src='https://zerophishing.iaas.checkpoint.com/2/zp.js?api_key={3D95C7D9-5F39-9247-A9ED-9545A193D025}' defer crossorigin></script><script>
+<script nonce="B0D4EE8AF29">var zphInj="eyJkc3RfaXAiOiIxNzIuNjQuMTU1LjIwOSIsImRzdF9wb3J0IjoiNDQzIiwiZW5jb2RlZF9odHRwX2hvc3QiOiJZMmhoZEdkd2RDNWpiMjA9IiwiZW5jb2RlZF92aWEiOiIiLCJodHRwX3N0YXR1cyI6IjIwMCIsImVuY29kZWRfaHR0cF9zZXJ2ZXIiOiJUM1JvWlhJNklHTnNiM1ZrWm14aGNtVT0iLCJtZXRob2QiOiJHRVQiLCJjb250ZW50X2xlbmd0aCI6IjAiLCJlbmNvZGVkX2NvbnRlbnRfdHlwZSI6ImRHVjRkQzlvZEcxcyIsImludGVyZmFjZSI6ImV0aDEiLCJydWxlX2lkIjoiezMzQjFCNEFDLUMzNEQtNDYwNy1BNDJCLUJGRDZFMzFEOThBNn0iLCJpc19leGNlcHRpb24iOiIwIiwiYWN0aW9uX2J5X2V4Y2VwdGlvbiI6IlBSRVZFTlQiLCJ0cmFjayI6ImxvZyIsImluY2lkZW50X2lkIjoie0IwRDRFRThBLUYyOTUtNTg2OC04RUQ2LTQwNDgxRkQ2QjEzQn0ifQ=="</script><script nonce="B0D4EE8AF29" src='https://svcpfwcluster.foerstergroup.de/zph/token_generator.php?api_key={9E094107-1240-3645-BD56-762A6E3C3D69}' crossorigin></script><script nonce="B0D4EE8AF29" src='https://svcpfwcluster.foerstergroup.de/zph/js/sm.js?api_key={9E094107-1240-3645-BD56-762A6E3C3D69}' crossorigin></script><script nonce="B0D4EE8AF29" src='https://zerophishing.iaas.checkpoint.com/2/zp.js?api_key={9E094107-1240-3645-BD56-762A6E3C3D69}' defer crossorigin></script><script>
 const toast = document.getElementById('toast');
 let toastTimer;
 function showToast(text){
